@@ -53,7 +53,6 @@ chave=27465775123552058591578402
 numero_etiquetas=4
 
 quota_par_recebida=[]
-HMAC_recebida=[]
 chaves_etiquetas_ECDH=[]
 chaves_etiquetas_ECDSA=[]
 chaves_compartilhadas=[]
@@ -147,24 +146,15 @@ while True:
             quota_length=total_length[1] #comprimento da quota
             Pk_ECDH_length=total_length[2] #comprimento da chave pública ECDH
             Pk_ECDSA_length=total_length[3] #comprimento da chave pública ECDSA
-            HMAC_length=total_length[4] #comprimento do HMAC
             signature_length=total_length[5] #comprimento da assinatura da chave pública ECDH
             
             
             
-            # Define um dicionário de usuários com o ID, a quota, o HMAC da quota, a chave púlica da etiqueta e o texto cifrado
+            # Define um dicionário de usuários com o ID, a quota, a chave púlica da etiqueta e o texto cifrado
             user = {'ID': client_socket.recv(ID_length), 'Quota_par':client_socket.recv(quota_length), 
                     'chave_publica_da_etiqueta_ECDH':client_socket.recv(Pk_ECDH_length), 
                     'chave_publica_da_etiqueta_ECDSA':client_socket.recv(Pk_ECDSA_length), 
-                    'HMAC_quota':client_socket.recv(HMAC_length),
-                    'assinatura':client_socket.recv(signature_length)
-                    }  
-            
-                
-            #Verificação do HMAC
-            
-            #print(K_ID.verify(b'olar'))
-
+                    'assinatura':client_socket.recv(signature_length)}  
             
             print('Nova conexão aceita de {}:{}, Dispositivo {}'.format(*client_address, user))
         
@@ -178,7 +168,6 @@ while True:
 
             #Decodifica as quotas par e sua verificação recebidas e as armazena numa lista
             quota_par_recebida.append(user['Quota_par'].decode('utf-8'))
-            HMAC_recebida.append(user['HMAC_quota'])
             
             #a chave pública ECDH e ECDSA têm que ser deserializadas
             chave_da_etiqueta_ECDH=user['chave_publica_da_etiqueta_ECDH']

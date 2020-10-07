@@ -92,15 +92,6 @@ def encrypt(key, plaintext, associated_data):
 
     return (iv, ciphertext, encryptor.tag)
 
-#--------------------------------------------Cria o HMAC das quotas------------------------------------------------------------------------
-
-HMAC_quota = hmac.HMAC(b'CTR', hashes.SHA3_256())
-HMAC_quota.update(quota.to_bytes(25,'big'))
-HMAC_quota.finalize()
-
-print("O HMAC é:", HMAC_quota)
-
-
 #------------------------------------------------------Etapa de renovação-------------------------------------------------------------------
 
 
@@ -146,13 +137,12 @@ while inicio==True:
     
     # Se um evento ocorreu, envia as quotas e a chave pública para a etiqueta
     if evento:
-        lengths=(len(f"{pseudo_ids[1]}"),len(f"{quota}"),len(chave_publica_da_etiqueta_ECDH_serializada),len(chave_publica_da_etiqueta_ECDSA_serializada),len(f"{HMAC_quota}"),len(assinatura))
+        lengths=(len(f"{pseudo_ids[1]}"),len(f"{quota}"),len(chave_publica_da_etiqueta_ECDH_serializada),len(chave_publica_da_etiqueta_ECDSA_serializada),len(assinatura))
         
         total_length=int.from_bytes(lengths, byteorder ='big')
         
         client_socket.send(total_length.to_bytes(6, 'big')+f"{pseudo_ids[1]}".encode('utf-8') +f"{quota}".encode('utf-8')+
-                           chave_publica_da_etiqueta_ECDH_serializada+chave_publica_da_etiqueta_ECDSA_serializada+
-                           f"{HMAC_quota}".encode('utf-8')+assinatura)
+                           chave_publica_da_etiqueta_ECDH_serializada+chave_publica_da_etiqueta_ECDSA_serializada+assinatura)
 #-----------------------------------------------------etapa de identificação coletiva--------------------------------------------------------        
        
 
