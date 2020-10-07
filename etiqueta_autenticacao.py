@@ -172,9 +172,9 @@ while inicio==True:
             
             #Verificação da assinatura ECDSA
             verificacao=chave_publica_recebida.verify(assinatura, chave_publica_recebida, ec.ECDSA(hashes.SHA256()))
-            if verificacao!=None:
-                print('assinatura ECDSA não é válida')
-                sys.exit()
+            #if verificacao!=None:
+            #    print('assinatura ECDSA não é válida')
+            #    sys.exit()
             
          #Gera a chave compartilhada
             chave_compartilhada = chave_privada_da_etiqueta_ECDH.exchange(ec.ECDH(), chave_publica_recebida)
