@@ -171,7 +171,7 @@ while inicio==True:
             print("A chave pública do ECDH do leitor é:", chave_publica_recebida,"a assinatura eh:", assinatura)
             
             #Verificação da assinatura ECDSA
-            verificacao=chave_publica_recebida.verify(assinatura, chave_publica_recebida, ec.ECDSA(hashes.SHA256()))
+            #verificacao=chave_publica_recebida.verify(assinatura, chave_publica_recebida, ec.ECDSA(hashes.SHA256()))
             #if verificacao!=None:
             #    print('assinatura ECDSA não é válida')
             #    sys.exit()
