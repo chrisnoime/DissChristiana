@@ -39,7 +39,7 @@ chave_privada_do_leitor_ECDSA = ec.generate_private_key(ec.SECP192R1())
 chave_publica_do_leitor_ECDSA = chave_privada_do_leitor_ECDSA.public_key()
 
 #Gera a assinatura da chave pública do ECDH usando o ECDSA
-assinatura = chave_privada_do_leitor_ECDSA.sign(chave_publica_do_leitor_ECDH_serializada,ec.ECDSA(hashes.SHA256()))
+assinatura = chave_privada_do_leitor_ECDSA.sign(chave_publica_do_leitor_ECDH_serializada,ec.ECDSA(hashes.SHA3_256()))
 print('A assinatura da chave pública ECDH do leitor é:', assinatura)
 
 
@@ -50,7 +50,7 @@ quota=2746577512355205859157840216526864179689440502875054356288
 quota_nativa=2746577512355205859157840216526864179689440502875054356289
 K_ID=0
 chave=27465775123552058591578402
-numero_etiquetas=4
+
 
 quota_par_recebida=[]
 chaves_etiquetas_ECDH=[]
@@ -77,24 +77,6 @@ def decrypt(key, associated_data, iv, ciphertext, tag):
     # If the tag does not match an InvalidTag exception will be raised.
     return decryptor.update(ciphertext) + decryptor.finalize()
 
-#------------------------------------------Área de testes----------------------------------------------------------------------
-
-
-
-#dados recebidos na etapa de inicialização, como o cada leitor pode ter acesso a vários grupos, isso deve ser uma lista
-
-quota_leitor=1543081927340809415937676767331069949295057160263597329568
-chave_grupo=quota_leitor
-
-#mas soh pra testar
-quotas_etiquetas=[]
-for i in range(numero_etiquetas):
-    
-    quotas_etiquetas.append(secrets.randbits(192))
-    
-quotas_leitor=[0] 
-
-quotas_leitor[0]=quota_leitor^quotas_etiquetas[0]^quotas_etiquetas[1]^quotas_etiquetas[2]^quotas_etiquetas[3]
 
 #----------------------------------------------------------------Parte da comunicação--------------------------------------------------
 
@@ -149,7 +131,6 @@ while True:
             signature_length=total_length[4] #comprimento da assinatura da chave pública ECDH
             
             
-            
             # Define um dicionário de usuários com o ID, a quota, a chave púlica da etiqueta e o texto cifrado
             user = {'ID': client_socket.recv(ID_length), 'Quota_par':client_socket.recv(quota_length), 
                     'chave_publica_da_etiqueta_ECDH':client_socket.recv(Pk_ECDH_length), 
@@ -158,10 +139,10 @@ while True:
             
             print('Nova conexão aceita de {}:{}, Dispositivo {}'.format(*client_address, user))
         
-            # Add accepted socket to select.select() list
+            # Adiciona os soquetes selecionados a lista select.select() 
             sockets_list.append(client_socket)
             
-            # Also save username and username header
+            # Salva os dados desse soquete na lista de clientes
             clients[client_socket] = user
             client_socket.send(len(chave_publica_do_leitor_ECDH_serializada).to_bytes(4, 'big')+chave_publica_do_leitor_ECDH_serializada+len(chave_publica_do_leitor_ECDH_serializada).to_bytes(4, 'big')+assinatura)
             
@@ -181,20 +162,12 @@ while True:
             assinatura_recebida=user['assinatura']
             
             #Verificação da assinatura ECDSA
-            verificacao=chave_publica_recebida_ECDSA.verify(assinatura_recebida, chave_da_etiqueta_ECDH, ec.ECDSA(hashes.SHA256()))
+            verificacao=chave_publica_recebida_ECDSA.verify(assinatura_recebida, chave_da_etiqueta_ECDH, ec.ECDSA(hashes.SHA3_256()))
             if verificacao!=None:
                 print('assinatura ECDSA não é válida')
                 sys.exit()
 
-#----------------------------------------------------------Etapa de autenticação coletiva----------------------------------------------------------
-    #Cálculo da chave do grupo
-            for i in range(len(quota_par_recebida)):
-                quota_par=quota_par_recebida[i]
-                chave_grupo=chave_grupo^int(quota_par)
-    
-            print("A chave desse grupo é:", chave_grupo)
-    #Envia a chave do grupo para o servidor para verificação XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-     #Recebe a resposta de autenticação. Se for autenticado prossegue, se não encerra a conexão.
+
     
 #---------------------------------------------------------------------ECDH-------------------------------------------------------------------
  

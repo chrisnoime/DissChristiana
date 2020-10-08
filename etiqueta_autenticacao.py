@@ -68,7 +68,7 @@ chave_publica_da_etiqueta_ECDSA_serializada.splitlines()[0]
 print("A chave pública ECDSA da etiqueta é:", chave_publica_da_etiqueta_ECDSA_serializada)
 
 #Gera a assinatura da chave pública do ECDH usando o ECDSA
-assinatura = chave_privada_da_etiqueta_ECDSA.sign(chave_publica_da_etiqueta_ECDH_serializada,ec.ECDSA(hashes.SHA256()))
+assinatura = chave_privada_da_etiqueta_ECDSA.sign(chave_publica_da_etiqueta_ECDH_serializada,ec.ECDSA(hashes.SHA3_256()))
 print('A assinatura pública ECDH da etiqueta é:', assinatura)
 
 #-------------------------------------------Cria a função para encriptar o AES--------------------------------------------------------------
@@ -138,8 +138,9 @@ while inicio==True:
     # Se um evento ocorreu, envia as quotas e a chave pública para a etiqueta
     if evento:
         lengths=(len(f"{pseudo_ids[1]}"),len(f"{quota}"),len(chave_publica_da_etiqueta_ECDH_serializada),len(chave_publica_da_etiqueta_ECDSA_serializada),len(assinatura))
-        
+        print("a tupla eh",lengths)
         total_length=int.from_bytes(lengths, byteorder ='big')
+        
         
         client_socket.send(total_length.to_bytes(5, 'big')+f"{pseudo_ids[1]}".encode('utf-8') +f"{quota}".encode('utf-8')+
                            chave_publica_da_etiqueta_ECDH_serializada+chave_publica_da_etiqueta_ECDSA_serializada+assinatura)
@@ -161,7 +162,7 @@ while inicio==True:
             print("A chave pública do ECDH do leitor é:", chave_publica_recebida,"a assinatura eh:", assinatura)
             
             #Verificação da assinatura ECDSA
-            #verificacao=chave_publica_recebida.verify(assinatura, chave_publica_recebida, ec.ECDSA(hashes.SHA256()))
+            #verificacao=chave_publica_recebida.verify(assinatura, chave_publica_recebida, ec.ECDSA(hashes.SHA3_256()))
             #if verificacao!=None:
             #    print('assinatura ECDSA não é válida')
             #    sys.exit()
