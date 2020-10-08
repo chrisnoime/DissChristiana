@@ -141,7 +141,7 @@ while inicio==True:
         
         total_length=int.from_bytes(lengths, byteorder ='big')
         
-        client_socket.send(total_length.to_bytes(6, 'big')+f"{pseudo_ids[1]}".encode('utf-8') +f"{quota}".encode('utf-8')+
+        client_socket.send(total_length.to_bytes(5, 'big')+f"{pseudo_ids[1]}".encode('utf-8') +f"{quota}".encode('utf-8')+
                            chave_publica_da_etiqueta_ECDH_serializada+chave_publica_da_etiqueta_ECDSA_serializada+assinatura)
 #-----------------------------------------------------etapa de identificação coletiva--------------------------------------------------------        
        
