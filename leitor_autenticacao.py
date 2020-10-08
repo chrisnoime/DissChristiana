@@ -139,14 +139,14 @@ while True:
             # Lida com as mensagens recebidas
             
             # recebe a primeira mensagem com os comprimentos dos dados a serem recebidos  no formato de uma tupla e cria as variáveis com os tamanhos         
-            total_length = client_socket.recv(6)
+            total_length = client_socket.recv(5)
             lengths=tuple(total_length) #tupla com todos os comprimentos de dados a serem recebidos
             
             ID_length=total_length[0] #comprimento do ID
             quota_length=total_length[1] #comprimento da quota
             Pk_ECDH_length=total_length[2] #comprimento da chave pública ECDH
             Pk_ECDSA_length=total_length[3] #comprimento da chave pública ECDSA
-            signature_length=total_length[5] #comprimento da assinatura da chave pública ECDH
+            signature_length=total_length[4] #comprimento da assinatura da chave pública ECDH
             
             
             
