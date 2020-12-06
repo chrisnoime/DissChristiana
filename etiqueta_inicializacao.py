@@ -26,14 +26,7 @@ from cryptography.hazmat.primitives.ciphers import (
 IP = "127.0.0.1"
 PORT = 1234
 
-grupo=234
-ID=124 #lembrar que o tamanho tem que ser dado no servidor
-CTR=0
-parametros=0
-quota=2746577512355205859157840216526864179689440502875054356288
-quota_nativa=2746577512355205859157840216526864179689440502875054356289
-K_ID=0
-chave=27465775123552058591578402
+ID=124 #lembrar que varia pra cada dispositivo
 
 
 #-------------------------------------Parte da comunicação------------------------------------------------------------------------
@@ -51,7 +44,7 @@ client_socket.setblocking(False)
 # Informa o tipo de dispositivo
 tipo_de_dispositivo = b'etiqueta'
 
-client_socket.send(f"{ID}".encode('utf-8') +f"{grupo}".encode('utf-8')+tipo_de_dispositivo)
+client_socket.send(f"{ID}".encode('utf-8') +tipo_de_dispositivo)
 
 while True:
                           
@@ -66,10 +59,11 @@ while True:
     
 
     try:
-        # Aguarda o recebimento dos dados
+        # Aguarda o recebimento dos dados das quotas e grupo
         while True:
             data = client_socket.recv(192)
             print(data) 
+            sys.exit()
     
 
     except IOError as e:

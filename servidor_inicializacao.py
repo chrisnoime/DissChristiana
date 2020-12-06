@@ -8,7 +8,7 @@ import secrets
 #------------------------------------------------------------Constantes--------------------------------------------------------------
 Ne=0 #numero total de etiquetas
 Ng=0 #numero de grupos
-Ne_input=[]
+#Ne_input=[] só para o caso em que o usuário insere as quantidades de etiquetas em cada grupo
 list_etiquetas_grupo=[]#numero de etiquetas nos grupos
 lista_leitores=[] #lista com os leitores
 lista_etiquetas=[] #lista com as etiquetas
@@ -28,20 +28,20 @@ ID_etiqueta=0
 ID=0
 grupo=0
 
-CTRE=1 #contador da quantidade de etiquetas conectadas
-CTRL=1 #contador da quantidade de leitores conectados
 
-ID_length = 3
-group_length=3
-type_length=10
+ID_length = 3 #comprimento da informação recebida da identidade do dispositivo
+type_length=10 #comprimento da informação recebida do tipo de dispositivo (etiqueta ou leitor)
 
 IP = "127.0.0.1"
 PORT = 1234
 
 #----------------------------------------------------------Recebe as entradas do usuário---------------------------------------------------
+
+#Recebe do usuário o número de grupos
 Ng_input=input("Qual o número de grupos?")
 Ng=int(Ng_input)
 
+#Recebe do usuário a quantidade de etiquetas em cada grupo
 #for k in range(Ng):
 #a=input("Qual o número de etiquetas no grupo?")
     #Ne_input.append=a
@@ -56,7 +56,7 @@ ID_grupo=secrets.randbits(192)
 for i in range(Ng):
     
     ID_grupos.append(secrets.randbits(192))
-    list_etiquetas_grupo.append(i)
+    list_etiquetas_grupo.append(i+1)
     
 #Aqui começa a geração das quotas das etiquetas e dos leitores
 
@@ -93,7 +93,7 @@ else: print('não está batendo')
 for num in range(0, len(list_etiquetas_grupo)): 
     Ne = Ne + list_etiquetas_grupo[num] 
    
-print("Ne é", Ne) 
+print("Número total de etiquetas é", Ne) 
 
 
 #----------------------------------------------------------------Parte da comunicação--------------------------------------------------
@@ -123,6 +123,7 @@ print(f'Esperando por conexões em {IP}:{PORT}...')
 
 while True:
 
+
     # Inicializa o select
     read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
 
@@ -138,22 +139,20 @@ while True:
 
             # Lida com as mensagens recebidas
             
-            # recebe a primeira mensagem com o ID, tipo de dispositivo e grupo ao qual pertence
+            # recebe a primeira mensagem com o ID e o tipo de dispositivo 
             ID_recebido = client_socket.recv(ID_length)
         
-            # Se nenhum dado foi recebido, disconectar
+            # Se nenhum dado foi recebido, desconectar
             if not len(ID_recebido):
                 socket.SHUT_RDWR
 
             # Converte o ID recebido para um inteiro para processamento
             ID = int(ID_recebido)
         
-            # Define um dicionário de usuários com o ID, o tipo de dispositivo e o grupo ao qual pertence
-            user = {'ID': ID, 'Grupo':int(client_socket.recv(group_length)), 'Tipo de dispositivo': client_socket.recv(type_length)}           
+            # Define um dicionário de usuários com o ID e o tipo de dispositivo 
+            user = {'ID': ID, 'Tipo de dispositivo': client_socket.recv(type_length)}           
             print(user)
             
-            #guarda o valor do grupo desse dispositivo
-            grupo_recebido = user['Grupo']
             
             # Adiciona o soquete aceito na lista select.select() 
             sockets_list.append(client_socket)
@@ -163,16 +162,23 @@ while True:
            
              # Verifica se é uma etiqueta ou um leitor ou um dispositivo não reconhecido
             #se for uma etiqueta envia as quotas dela
-            if user['Tipo de dispositivo'].decode('utf-8')=='etiqueta':
-                CTRE=+1
-                dados=f"{quotas_par[CTRE]}".encode('utf-8')+b'//'+f"{quotas_impar[CTRE]}".encode('utf-8')
+            if user['Tipo de dispositivo'].decode('utf-8')=='etiqueta' and len(lista_etiquetas)<=Ne:
+                dados=f"{quotas_par[len(lista_etiquetas)]}".encode('utf-8')+b'//'+f"{quotas_impar[len(lista_etiquetas)]}".encode('utf-8')
                 client_socket.send(b'As suas quotas sao:'+ dados)
+                lista_etiquetas.append(client_socket)
+                if len(lista_etiquetas)==Ne:
+                    print("número máximo de etiquetas conectadas")
+            
                 
             #se for um leitor envia o ID do grupo dele e a quota referente a esse grupo   
-            elif user['Tipo de dispositivo'].decode('utf-8')=='leitor':
-                CTRL=+1
-                dados=f"{quotas_leitores[CTRL],ID_grupos[CTRL]}".encode('utf-8')
-                client_socket.send(b'A sua quota e a ID do seu grupo sao:'+ dados)
+            elif user['Tipo de dispositivo'].decode('utf-8')=='leitor' and len(lista_leitores)<=Ng:
+                dados=f"{quotas_leitores[len(lista_leitores)],ID_grupos[len(lista_leitores)],list_etiquetas_grupo[len(lista_leitores)]}".encode('utf-8')
+                client_socket.send(b'A sua quota, a ID do seu grupo e a quantidade de etiquetas nele sao:'+ dados)
+                lista_leitores.append(client_socket)
+                if len(lista_leitores)==Ng:
+                    print("número máximo de leitores conectados")
+                
+                
             #se não for uma etiqueta nem um leitor, é um dispositivo não reconhecido e termina a conexão
             else: #acho que aqui devia ser uma exceção
                 print("Dispositivo não reconhecido")
@@ -180,7 +186,11 @@ while True:
                 continue
 
             print('Nova conexão aceita de {}:{}, ID {}'.format(*client_address, user['ID']))
-            print(lista_leitores, lista_etiquetas)
+            
+            if len(lista_etiquetas)==Ne and len(lista_leitores)==Ng:
+                print("número de dispositivos conectados no limite. Etapa finalizada")
+                socket.SHUT_RDWR
+                sys.exit()
 
         # Se não, um soquete já conectado está enviando uma mensagem
         else:
