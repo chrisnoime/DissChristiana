@@ -27,8 +27,7 @@ ID_length = 32#lembrar que o tamanho tem que ser dado no servidor
 CTR_length=2 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-
-#valores recebidos na etapa de inicialização
+#O usuário precisa entrar com os valores das quotas recebidos na etapa de inicialização
 
 quota = int(input('Qual a sua quota par?'))
 quota_nativa=int(input('Qual a sua quota impar?'))
@@ -69,7 +68,7 @@ print("A chave pública ECDSA da etiqueta é:", chave_publica_da_etiqueta_ECDSA_
 
 #Gera a assinatura da chave pública do ECDH usando o ECDSA
 assinatura = chave_privada_da_etiqueta_ECDSA.sign(chave_publica_da_etiqueta_ECDH_serializada,ec.ECDSA(hashes.SHA3_256()))
-print('A assinatura pública ECDH da etiqueta é:', assinatura)
+print('A assinatura ECDSA da chave pública ECDH da etiqueta é:', assinatura)
 
 #-------------------------------------------Cria a função para encriptar o AES--------------------------------------------------------------
 
@@ -138,7 +137,7 @@ while inicio==True:
     # Se um evento ocorreu, envia as quotas e a chave pública para a etiqueta
     if evento:
         lengths=(len(f"{pseudo_ids[1]}"),len(f"{quota}"),len(chave_publica_da_etiqueta_ECDH_serializada),len(chave_publica_da_etiqueta_ECDSA_serializada),len(assinatura))
-        print("a tupla eh",lengths)
+        print("Início da comunicação com o leitor")
         total_length=int.from_bytes(lengths, byteorder ='big')
         
         
@@ -154,26 +153,19 @@ while inicio==True:
             #recebe a chave pública ECDH do leitor e a formata para o formato correto
             chave_publica_do_leitor=client_socket.recv(key_length[1])
             chave_publica_recebida = serialization.load_pem_public_key(chave_publica_do_leitor)
+    
             
-            #recebe o comprimento da assinatura e ela
-            signature_length=struct.unpack('>HH',client_socket.recv(4)) #recebe o comprimento da assinatura
-            assinatura=client_socket.recv(signature_length[1])
+            print("A chave pública do ECDH do leitor é:", chave_publica_recebida)
             
-            print("A chave pública do ECDH do leitor é:", chave_publica_recebida,"a assinatura eh:", assinatura)
-            
-            #Verificação da assinatura ECDSA
-            #verificacao=chave_publica_recebida.verify(assinatura, chave_publica_recebida, ec.ECDSA(hashes.SHA3_256()))
-            #if verificacao!=None:
-            #    print('assinatura ECDSA não é válida')
-            #    sys.exit()
             
          #Gera a chave compartilhada
             chave_compartilhada = chave_privada_da_etiqueta_ECDH.exchange(ec.ECDH(), chave_publica_recebida)
-            print("A chave compartilhada é:", chave_compartilhada)
+            print("A chave compartilhada criada pelo ECDH para o AES é::", chave_compartilhada)
          
             inicio=False
              
-            
+#-----------------------------------------Tratamento de erros--------------------------------------------------------------
+
     except IOError as e:
         # This is normal on non blocking connections - when there are no incoming data error is going to be raised
         # Some operating systems will indicate that using AGAIN, and some using WOULDBLOCK error code
@@ -193,7 +185,7 @@ while inicio==True:
                 
      #Envia a informação encriptada   
        
-
+#----------------------------------Comunicações das pseudo identidades encriptadas pelo AES, cada comunicação aumenta em 1 o counter---------------------------------
 if inicio==False:
     while True:
         evento = input('Ocorreu conexão?')

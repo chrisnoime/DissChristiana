@@ -23,25 +23,16 @@ ID=111
 # Gera as chaves do ECDH
 #gera a chave privada
 chave_privada_do_leitor_ECDH = ec.generate_private_key(ec.SECP192R1())
-print("A chave privada do leitor é:", chave_privada_do_leitor_ECDH)
+print("A chave privada ECDH do leitor é:", chave_privada_do_leitor_ECDH)
 
 #gera a chave pública e serializa para bytes para poder enviar
 chave_publica_do_leitor_ECDH= chave_privada_do_leitor_ECDH.public_key()
-print("A chave pública do leitor é:", chave_publica_do_leitor_ECDH)
+print("A chave pública ECDH do leitor é:", chave_publica_do_leitor_ECDH)
 
 chave_publica_do_leitor_ECDH_serializada = chave_publica_do_leitor_ECDH.public_bytes(
      encoding=serialization.Encoding.PEM,
      format=serialization.PublicFormat.SubjectPublicKeyInfo)
 chave_publica_do_leitor_ECDH_serializada.splitlines()[0]
-
-#Gera as chaves do ECDSA
-chave_privada_do_leitor_ECDSA = ec.generate_private_key(ec.SECP192R1())
-chave_publica_do_leitor_ECDSA = chave_privada_do_leitor_ECDSA.public_key()
-
-#Gera a assinatura da chave pública do ECDH usando o ECDSA
-assinatura = chave_privada_do_leitor_ECDSA.sign(chave_publica_do_leitor_ECDH_serializada,ec.ECDSA(hashes.SHA3_256()))
-print('A assinatura da chave pública ECDH do leitor é:', assinatura)
-
 
 
 #-------------------------------------------Váriaveis---------------------------------------------------------------------------
@@ -144,7 +135,7 @@ while True:
             
             # Salva os dados desse soquete na lista de clientes
             clients[client_socket] = user
-            client_socket.send(len(chave_publica_do_leitor_ECDH_serializada).to_bytes(4, 'big')+chave_publica_do_leitor_ECDH_serializada+len(chave_publica_do_leitor_ECDH_serializada).to_bytes(4, 'big')+assinatura)
+            client_socket.send(len(chave_publica_do_leitor_ECDH_serializada).to_bytes(4, 'big')+chave_publica_do_leitor_ECDH_serializada)
             
 
             #Decodifica as quotas par e sua verificação recebidas e as armazena numa lista
